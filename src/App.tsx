@@ -87,6 +87,10 @@ export default function App() {
           <pre>{logs}</pre>
         </div>
       ) : null}
+
+      <div style={{ marginTop: 16, opacity: 0.75 }}>
+        <small>Version v{__APP_VERSION__} · Commit {__APP_COMMIT__}</small>
+      </div>
     </div>
   )
 }
