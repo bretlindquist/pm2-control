@@ -62,6 +62,52 @@ button.warn { background: var(--danger); }
 button.warn:hover { background: var(--danger-hover); }
 
 small { color: var(--muted); }
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.toggle .track {
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: #223055;
+  border: 1px solid #3a4f84;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.toggle .thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #dce8ff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  transform: translateX(0);
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+.toggle input:checked + .track {
+  background: #27417f;
+  border-color: #5d83d6;
+}
+.toggle input:checked + .track .thumb {
+  transform: translateX(20px);
+  background: #ffffff;
+}
+.toggle input:focus-visible + .track {
+  box-shadow: 0 0 0 3px rgba(143, 179, 255, 0.28);
+  border-color: var(--focus);
+}
+
 pre { white-space:pre-wrap; background:#0a1229; border:1px solid #26355f; padding:10px; border-radius:8px; max-height:220px; overflow:auto; }
 .spin { display:inline-block; animation: spin 0.8s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

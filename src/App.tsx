@@ -104,12 +104,16 @@ export default function App() {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <small>Last updated: {updatedAt?.toLocaleTimeString() ?? '—'}</small>
-        <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+        <label className="toggle" role="switch" aria-checked={useTailscale}>
           <input
             type="checkbox"
             checked={useTailscale}
             onChange={(e) => setUseTailscale(e.target.checked)}
+            aria-label="Toggle Tailscale links"
           />
+          <span className="track" aria-hidden="true">
+            <span className="thumb" />
+          </span>
           <small>Tailscale links</small>
         </label>
       </div>
