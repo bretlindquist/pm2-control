@@ -123,6 +123,26 @@ fn restart_mission_control() -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn open_service(name: String) -> Result<(), String> {
+    let url = match name.as_str() {
+        "golfgit-dev" => "http://127.0.0.1:3000",
+        "codex-switcher-web" => "http://127.0.0.1:5176",
+        "ps4-mission-control" => "http://127.0.0.1:8787/mission-control/",
+        _ => return Err(format!("No open URL configured for {name}")),
+    };
+
+    let out = Command::new("open")
+        .arg(url)
+        .output()
+        .map_err(|e| e.to_string())?;
+
+    if !out.status.success() {
+        return Err(String::from_utf8_lossy(&out.stderr).to_string());
+    }
+    Ok(())
+}
+
 fn show_main_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -289,7 +309,8 @@ pub fn run() {
             pm2_action_all,
             pm2_save,
             pm2_logs,
-            restart_mission_control
+            restart_mission_control,
+            open_service
         ])
         .run(tauri::generate_context!())
         .expect("error while running pm2-control");

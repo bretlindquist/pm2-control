@@ -7,11 +7,21 @@ export default function App() {
   const [list, setList] = useState<Proc[]>([])
   const [logs, setLogs] = useState('')
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   async function refresh() {
-    const data = await invoke<Proc[]>('pm2_list')
-    setList(data)
-    setUpdatedAt(new Date())
+    const started = Date.now()
+    setIsRefreshing(true)
+    try {
+      const data = await invoke<Proc[]>('pm2_list')
+      setList(data)
+      setUpdatedAt(new Date())
+    } finally {
+      const elapsed = Date.now() - started
+      const minVisibleMs = 350
+      const wait = Math.max(0, minVisibleMs - elapsed)
+      setTimeout(() => setIsRefreshing(false), wait)
+    }
   }
 
   async function action(name: string, cmd: 'start' | 'stop' | 'restart') {
@@ -33,6 +43,14 @@ export default function App() {
     await invoke('restart_mission_control')
   }
 
+  async function openService(name: string) {
+    try {
+      await invoke('open_service', { name })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   async function getLogs(name: string) {
     const txt = await invoke<string>('pm2_logs', { name, lines: 80 })
     setLogs(txt)
@@ -42,6 +60,17 @@ export default function App() {
     refresh()
     const t = setInterval(refresh, 5000)
     return () => clearInterval(t)
+  }, [])
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const isCmdR = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r'
+      if (!isCmdR) return
+      e.preventDefault()
+      refresh()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
 
   const running = list.filter((p) => p.pm2_env?.status === 'online').length
@@ -57,7 +86,9 @@ export default function App() {
           <button className="warn" style={{ marginLeft: 8 }} onClick={() => actionAll('stop')}>Stop all</button>
           <button className="secondary" style={{ marginLeft: 8 }} onClick={saveState}>Save</button>
           <button className="secondary" style={{ marginLeft: 8 }} onClick={restartMissionControl}>Restart Mission</button>
-          <button className="secondary" style={{ marginLeft: 8 }} onClick={refresh}>Refresh</button>
+          <button className="secondary" style={{ marginLeft: 8 }} onClick={refresh}>
+            {isRefreshing ? <span className="spin">↻</span> : 'Refresh'}
+          </button>
         </div>
       </div>
       <small>Last updated: {updatedAt?.toLocaleTimeString() ?? '—'}</small>
@@ -71,6 +102,7 @@ export default function App() {
                 <div><small>Status: {p.pm2_env?.status ?? 'unknown'} · CPU {Math.round(p.monit?.cpu ?? 0)}% · MEM {Math.round((p.monit?.memory ?? 0)/1024/1024)}MB</small></div>
               </div>
               <div className="actions">
+                <button onClick={() => openService(p.name)}>Open</button>
                 <button onClick={() => action(p.name, 'start')}>Start</button>
                 <button className="secondary" onClick={() => action(p.name, 'restart')}>Restart</button>
                 <button className="warn" onClick={() => action(p.name, 'stop')}>Stop</button>

@@ -11,3 +11,5 @@ button.secondary { background:#223055; }
 button.warn { background:#8a3030; }
 small { color:#9eb0d9; }
 pre { white-space:pre-wrap; background:#0a1229; border:1px solid #26355f; padding:10px; border-radius:8px; max-height:220px; overflow:auto; }
+.spin { display:inline-block; animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

@@ -5,11 +5,13 @@ Lightweight macOS desktop dashboard for PM2.
 ## MVP (Phase 2)
 
 - View PM2 process list (`pm2 jlist`)
+- Open common local services (Golf, Codex Switcher Web, PS4 Mission Control)
 - Start / Stop / Restart per process
 - Start all / Stop all / Restart all
 - Save PM2 process state (`pm2 save`)
 - View recent logs
 - Auto-refresh every 5s
+- Manual refresh animation + Cmd/Ctrl+R refresh shortcut
 - Menu bar (tray) icon with quick actions + Open Dashboard
 - Tray title shows live running/total count (e.g. `3/5`)
 - One-click tray shortcuts to restart top services
