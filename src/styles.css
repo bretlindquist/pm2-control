@@ -1,15 +1,67 @@
-body { font-family: Inter, system-ui, sans-serif; margin: 0; background: #0b1020; color: #e8edf7; }
+:root {
+  --bg: #0b1020;
+  --surface: #131b33;
+  --surface-2: #1a2444;
+  --border: #2a3a66;
+  --text: #e8edf7;
+  --muted: #9eb0d9;
+  --primary: #27417f;
+  --primary-hover: #3153a1;
+  --secondary: #223055;
+  --secondary-hover: #2a3c68;
+  --danger: #8a3030;
+  --danger-hover: #a33c3c;
+  --focus: #8fb3ff;
+}
+
+body { font-family: Inter, system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
 .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap: 12px; flex-wrap: wrap; }
 .badge { background:#1f2a44; border:1px solid #334466; border-radius:999px; padding:6px 10px; font-size:12px; }
 .grid { display:grid; grid-template-columns:1fr; gap:12px; }
-.card { background:#131b33; border:1px solid #2a3a66; border-radius:12px; padding:14px; }
+
+.card {
+  background: var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  transition: transform 160ms ease, border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+.card:hover,
+.card:focus-within {
+  transform: translateY(-1px);
+  border-color: #3a528f;
+  background: var(--surface-2);
+  box-shadow: 0 8px 22px rgba(6, 12, 28, 0.35);
+}
+
 .row { display:flex; gap:10px; justify-content:space-between; align-items:center; }
 .actions button { margin-left:8px; }
-button { background:#27417f; color:#fff; border:none; border-radius:8px; padding:8px 10px; cursor:pointer; }
-button.secondary { background:#223055; }
-button.warn { background:#8a3030; }
-small { color:#9eb0d9; }
+
+button {
+  background: var(--primary);
+  color:#fff;
+  border:1px solid transparent;
+  border-radius:8px;
+  padding:8px 10px;
+  cursor:pointer;
+  transition: background-color 140ms ease, transform 100ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+button:hover { background: var(--primary-hover); }
+button:active { transform: translateY(1px) scale(0.99); }
+button:focus-visible {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgba(143, 179, 255, 0.28);
+}
+
+button.secondary { background: var(--secondary); }
+button.secondary:hover { background: var(--secondary-hover); }
+
+button.warn { background: var(--danger); }
+button.warn:hover { background: var(--danger-hover); }
+
+small { color: var(--muted); }
 pre { white-space:pre-wrap; background:#0a1229; border:1px solid #26355f; padding:10px; border-radius:8px; max-height:220px; overflow:auto; }
 .spin { display:inline-block; animation: spin 0.8s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
