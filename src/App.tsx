@@ -7,10 +7,10 @@ type MetricHistory = Record<string, { cpu: number[]; mem: number[] }>
 
 function serviceUrl(name: string, tailscale: boolean): string | null {
   const base = 'https://brets-macbook-pro-m2-max.tailb491d6.ts.net'
-  if (name === 'golfgit-dev') return tailscale ? `${base}/golf` : 'http://127.0.0.1:3000'
-  if (name === 'codex-switcher-web') return tailscale ? `${base}/codex` : 'http://127.0.0.1:5176'
+  if (name === 'golfgit-dev') return tailscale ? `${base}:8443/` : 'http://127.0.0.1:3000'
+  if (name === 'codex-switcher-web') return tailscale ? `${base}:8444/` : 'http://127.0.0.1:5176'
   if (name === 'codex-switcher-api') return tailscale ? `${base}/codex-api` : 'http://127.0.0.1:8788/api/health'
-  if (name === 'ps4-mission-control') return tailscale ? `${base}/ps4` : 'http://127.0.0.1:8787/mission-control/'
+  if (name === 'ps4-mission-control') return tailscale ? `${base}:8445/` : 'http://127.0.0.1:8787/mission-control/'
   return null
 }
 

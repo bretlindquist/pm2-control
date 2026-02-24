@@ -132,10 +132,10 @@ fn open_service(name: String, tailscale: bool) -> Result<(), String> {
         ("codex-switcher-api", false) => "http://127.0.0.1:8788/api/health".to_string(),
         ("ps4-mission-control", false) => "http://127.0.0.1:8787/mission-control/".to_string(),
 
-        ("golfgit-dev", true) => format!("{base}/golf"),
-        ("codex-switcher-web", true) => format!("{base}/codex"),
+        ("golfgit-dev", true) => format!("{base}:8443/"),
+        ("codex-switcher-web", true) => format!("{base}:8444/"),
         ("codex-switcher-api", true) => format!("{base}/codex-api"),
-        ("ps4-mission-control", true) => format!("{base}/ps4"),
+        ("ps4-mission-control", true) => format!("{base}:8445/"),
         _ => return Err(format!("No open URL configured for {name}")),
     };
 
