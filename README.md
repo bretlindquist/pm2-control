@@ -11,6 +11,8 @@ Lightweight macOS desktop dashboard for PM2.
 - View recent logs
 - Auto-refresh every 5s
 - Menu bar (tray) icon with quick actions + Open Dashboard
+- Tray title shows live running/total count (e.g. `3/5`)
+- One-click tray shortcuts to restart top services
 
 ## Why
 
