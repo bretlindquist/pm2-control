@@ -19,6 +19,16 @@ export default function App() {
     await refresh()
   }
 
+  async function actionAll(cmd: 'start' | 'stop' | 'restart') {
+    await invoke('pm2_action_all', { action: cmd })
+    await refresh()
+  }
+
+  async function saveState() {
+    await invoke('pm2_save')
+    await refresh()
+  }
+
   async function getLogs(name: string) {
     const txt = await invoke<string>('pm2_logs', { name, lines: 80 })
     setLogs(txt)
@@ -38,6 +48,10 @@ export default function App() {
         <h1>PM2 Control</h1>
         <div>
           <span className="badge">Running {running}/{list.length}</span>
+          <button className="secondary" style={{ marginLeft: 8 }} onClick={() => actionAll('start')}>Start all</button>
+          <button className="secondary" style={{ marginLeft: 8 }} onClick={() => actionAll('restart')}>Restart all</button>
+          <button className="warn" style={{ marginLeft: 8 }} onClick={() => actionAll('stop')}>Stop all</button>
+          <button className="secondary" style={{ marginLeft: 8 }} onClick={saveState}>Save</button>
           <button className="secondary" style={{ marginLeft: 8 }} onClick={refresh}>Refresh</button>
         </div>
       </div>

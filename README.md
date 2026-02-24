@@ -2,12 +2,15 @@
 
 Lightweight macOS desktop dashboard for PM2.
 
-## MVP
+## MVP (Phase 2)
 
 - View PM2 process list (`pm2 jlist`)
-- Start / Stop / Restart process
+- Start / Stop / Restart per process
+- Start all / Stop all / Restart all
+- Save PM2 process state (`pm2 save`)
 - View recent logs
 - Auto-refresh every 5s
+- Menu bar (tray) icon with quick actions + Open Dashboard
 
 ## Why
 
