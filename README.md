@@ -23,6 +23,10 @@ Lightweight macOS desktop dashboard for PM2.
 
 Use PM2 as the CLI source of truth, with a quick visual dashboard so you can see service status at a glance.
 
+## Next TODO
+
+- Move from path-based Tailscale routing to dedicated per-app hostnames (to avoid asset-prefix collisions like Next.js `/_next/*`).
+
 ## Run
 
 ```bash
