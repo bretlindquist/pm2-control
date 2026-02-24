@@ -124,12 +124,18 @@ fn restart_mission_control() -> Result<(), String> {
 }
 
 #[tauri::command]
-fn open_service(name: String) -> Result<(), String> {
-    let url = match name.as_str() {
-        "golfgit-dev" => "http://127.0.0.1:3000",
-        "codex-switcher-web" => "http://127.0.0.1:5176",
-        "codex-switcher-api" => "http://127.0.0.1:8788/api/health",
-        "ps4-mission-control" => "http://127.0.0.1:8787/mission-control/",
+fn open_service(name: String, tailscale: bool) -> Result<(), String> {
+    let base = "https://brets-macbook-pro-m2-max.tailb491d6.ts.net";
+    let url = match (name.as_str(), tailscale) {
+        ("golfgit-dev", false) => "http://127.0.0.1:3000".to_string(),
+        ("codex-switcher-web", false) => "http://127.0.0.1:5176".to_string(),
+        ("codex-switcher-api", false) => "http://127.0.0.1:8788/api/health".to_string(),
+        ("ps4-mission-control", false) => "http://127.0.0.1:8787/mission-control/".to_string(),
+
+        ("golfgit-dev", true) => format!("{base}/golf"),
+        ("codex-switcher-web", true) => format!("{base}/codex"),
+        ("codex-switcher-api", true) => format!("{base}/codex-api"),
+        ("ps4-mission-control", true) => format!("{base}/ps4"),
         _ => return Err(format!("No open URL configured for {name}")),
     };
 

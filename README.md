@@ -6,6 +6,7 @@ Lightweight macOS desktop dashboard for PM2.
 
 - View PM2 process list (`pm2 jlist`)
 - Open common local services (Golf, Codex Switcher Web, PS4 Mission Control)
+- Tailscale links toggle (switch Open button between local and tailnet URLs)
 - Start / Stop / Restart per process
 - Start all / Stop all / Restart all
 - Save PM2 process state (`pm2 save`)

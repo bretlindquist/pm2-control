@@ -3,11 +3,12 @@ import { invoke } from '@tauri-apps/api/core'
 
 type Proc = { name: string; pm_id: number; pid: number; monit?: { memory?: number; cpu?: number }; pm2_env?: { status?: string; restart_time?: number; pm_uptime?: number } }
 
-function serviceUrl(name: string): string | null {
-  if (name === 'golfgit-dev') return 'http://127.0.0.1:3000'
-  if (name === 'codex-switcher-web') return 'http://127.0.0.1:5176'
-  if (name === 'codex-switcher-api') return 'http://127.0.0.1:8788/api/health'
-  if (name === 'ps4-mission-control') return 'http://127.0.0.1:8787/mission-control/'
+function serviceUrl(name: string, tailscale: boolean): string | null {
+  const base = 'https://brets-macbook-pro-m2-max.tailb491d6.ts.net'
+  if (name === 'golfgit-dev') return tailscale ? `${base}/golf` : 'http://127.0.0.1:3000'
+  if (name === 'codex-switcher-web') return tailscale ? `${base}/codex` : 'http://127.0.0.1:5176'
+  if (name === 'codex-switcher-api') return tailscale ? `${base}/codex-api` : 'http://127.0.0.1:8788/api/health'
+  if (name === 'ps4-mission-control') return tailscale ? `${base}/ps4` : 'http://127.0.0.1:8787/mission-control/'
   return null
 }
 
@@ -16,6 +17,7 @@ export default function App() {
   const [logs, setLogs] = useState('')
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [useTailscale, setUseTailscale] = useState(false)
 
   async function refresh() {
     const started = Date.now()
@@ -53,7 +55,7 @@ export default function App() {
 
   async function openService(name: string) {
     try {
-      await invoke('open_service', { name })
+      await invoke('open_service', { name, tailscale: useTailscale })
     } catch (e) {
       console.error(e)
     }
@@ -99,7 +101,18 @@ export default function App() {
           </button>
         </div>
       </div>
-      <small>Last updated: {updatedAt?.toLocaleTimeString() ?? '—'}</small>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <small>Last updated: {updatedAt?.toLocaleTimeString() ?? '—'}</small>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={useTailscale}
+            onChange={(e) => setUseTailscale(e.target.checked)}
+          />
+          <small>Tailscale links</small>
+        </label>
+      </div>
 
       <div className="grid" style={{ marginTop: 12 }}>
         {list.map((p) => (
@@ -110,8 +123,8 @@ export default function App() {
                 <div>
                   <small>Status: {p.pm2_env?.status ?? 'unknown'} · CPU {Math.round(p.monit?.cpu ?? 0)}% · MEM {Math.round((p.monit?.memory ?? 0)/1024/1024)}MB</small>
                 </div>
-                {serviceUrl(p.name) ? (
-                  <div><small>URL: {serviceUrl(p.name)}</small></div>
+                {serviceUrl(p.name, useTailscale) ? (
+                  <div><small>URL: {serviceUrl(p.name, useTailscale)}</small></div>
                 ) : null}
               </div>
               <div className="actions">
