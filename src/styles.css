@@ -15,15 +15,33 @@
 }
 
 body { font-family: Inter, system-ui, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
-.container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap: 12px; flex-wrap: wrap; }
+.container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+.header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; gap: 12px; flex-wrap: wrap; }
 .badge { background:#1f2a44; border:1px solid #334466; border-radius:999px; padding:6px 10px; font-size:12px; }
+.top-actions { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
+
+.subbar { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap: wrap; }
+.filters { display:flex; align-items:center; gap:8px; }
+.search {
+  background:#0e1730;
+  color:var(--text);
+  border:1px solid #2f4374;
+  border-radius:10px;
+  padding:8px 10px;
+  min-width: 200px;
+}
+.search:focus-visible {
+  outline:none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgba(143, 179, 255, 0.28);
+}
+
 .grid { display:grid; grid-template-columns:1fr; gap:12px; }
 
 .card {
   background: var(--surface);
   border:1px solid var(--border);
-  border-radius:12px;
+  border-radius:16px;
   padding:14px;
   transition: transform 160ms ease, border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
@@ -35,6 +53,21 @@ body { font-family: Inter, system-ui, sans-serif; margin: 0; background: var(--b
   box-shadow: 0 8px 22px rgba(6, 12, 28, 0.35);
 }
 
+.title-row { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+.pill {
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  padding:2px 8px;
+  font-size:11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border:1px solid transparent;
+}
+.pill.ok { background:#113528; border-color:#1f7a5b; color:#87f0cb; }
+.pill.warn { background:#3f2a10; border-color:#8e5f1a; color:#ffd48a; }
+.pill.err { background:#3a1520; border-color:#8f3148; color:#ff9db3; }
+
 .row { display:flex; gap:10px; justify-content:space-between; align-items:center; }
 .actions button { margin-left:8px; }
 
@@ -42,7 +75,7 @@ button {
   background: var(--primary);
   color:#fff;
   border:1px solid transparent;
-  border-radius:8px;
+  border-radius:10px;
   padding:8px 10px;
   cursor:pointer;
   transition: background-color 140ms ease, transform 100ms ease, box-shadow 140ms ease, border-color 140ms ease;

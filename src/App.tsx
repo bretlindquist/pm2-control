@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 
 type Proc = { name: string; pm_id: number; pid: number; monit?: { memory?: number; cpu?: number }; pm2_env?: { status?: string; restart_time?: number; pm_uptime?: number } }
+type FilterMode = 'all' | 'online' | 'non-online'
 
 function serviceUrl(name: string, tailscale: boolean): string | null {
   const base = 'https://brets-macbook-pro-m2-max.tailb491d6.ts.net'
@@ -12,12 +13,20 @@ function serviceUrl(name: string, tailscale: boolean): string | null {
   return null
 }
 
+function statusClass(status?: string) {
+  if (status === 'online') return 'pill ok'
+  if (status === 'stopped') return 'pill warn'
+  return 'pill err'
+}
+
 export default function App() {
   const [list, setList] = useState<Proc[]>([])
   const [logs, setLogs] = useState('')
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [useTailscale, setUseTailscale] = useState(false)
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState<FilterMode>('all')
 
   async function refresh() {
     const started = Date.now()
@@ -54,11 +63,7 @@ export default function App() {
   }
 
   async function openService(name: string) {
-    try {
-      await invoke('open_service', { name, tailscale: useTailscale })
-    } catch (e) {
-      console.error(e)
-    }
+    await invoke('open_service', { name, tailscale: useTailscale })
   }
 
   async function getLogs(name: string) {
@@ -85,25 +90,49 @@ export default function App() {
 
   const running = list.filter((p) => p.pm2_env?.status === 'online').length
 
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return list.filter((p) => {
+      const status = p.pm2_env?.status ?? 'unknown'
+      const filterPass =
+        filter === 'all' ? true : filter === 'online' ? status === 'online' : status !== 'online'
+      const queryPass = q.length === 0 ? true : p.name.toLowerCase().includes(q)
+      return filterPass && queryPass
+    })
+  }, [list, query, filter])
+
   return (
     <div className="container">
       <div className="header">
         <h1>PM2 Control</h1>
-        <div>
+        <div className="top-actions">
           <span className="badge">Running {running}/{list.length}</span>
-          <button className="secondary" style={{ marginLeft: 8 }} onClick={() => actionAll('start')}>Start all</button>
-          <button className="secondary" style={{ marginLeft: 8 }} onClick={() => actionAll('restart')}>Restart all</button>
-          <button className="warn" style={{ marginLeft: 8 }} onClick={() => actionAll('stop')}>Stop all</button>
-          <button className="secondary" style={{ marginLeft: 8 }} onClick={saveState}>Save</button>
-          <button className="secondary" style={{ marginLeft: 8 }} onClick={restartMissionControl}>Restart Mission</button>
-          <button className="secondary" style={{ marginLeft: 8, minWidth: 92 }} onClick={refresh}>
+          <button className="secondary" onClick={() => actionAll('start')}>Start all</button>
+          <button className="secondary" onClick={() => actionAll('restart')}>Restart all</button>
+          <button className="warn" onClick={() => actionAll('stop')}>Stop all</button>
+          <button className="secondary" onClick={saveState}>Save</button>
+          <button className="secondary" onClick={restartMissionControl}>Restart Mission</button>
+          <button className="secondary" style={{ minWidth: 92 }} onClick={refresh}>
             <span className={isRefreshing ? 'spin' : ''}>↻</span> <span style={{ marginLeft: 6 }}>Refresh</span>
           </button>
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+      <div className="subbar">
         <small>Last updated: {updatedAt?.toLocaleTimeString() ?? '—'}</small>
+
+        <div className="filters">
+          <input
+            className="search"
+            placeholder="Filter services…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button className={filter === 'all' ? '' : 'secondary'} onClick={() => setFilter('all')}>All</button>
+          <button className={filter === 'online' ? '' : 'secondary'} onClick={() => setFilter('online')}>Online</button>
+          <button className={filter === 'non-online' ? '' : 'secondary'} onClick={() => setFilter('non-online')}>Issues</button>
+        </div>
+
         <label className="toggle" role="switch" aria-checked={useTailscale}>
           <input
             type="checkbox"
@@ -119,28 +148,34 @@ export default function App() {
       </div>
 
       <div className="grid" style={{ marginTop: 12 }}>
-        {list.map((p) => (
-          <div key={p.pm_id} className="card">
-            <div className="row">
-              <div>
-                <strong>{p.name}</strong> <small>#{p.pm_id}</small>
+        {filtered.map((p) => {
+          const status = p.pm2_env?.status ?? 'unknown'
+          return (
+            <div key={p.pm_id} className="card">
+              <div className="row">
                 <div>
-                  <small>Status: {p.pm2_env?.status ?? 'unknown'} · CPU {Math.round(p.monit?.cpu ?? 0)}% · MEM {Math.round((p.monit?.memory ?? 0)/1024/1024)}MB</small>
+                  <div className="title-row">
+                    <strong>{p.name}</strong>
+                    <span className={statusClass(status)}>{status}</span>
+                  </div>
+                  <div>
+                    <small>CPU {Math.round(p.monit?.cpu ?? 0)}% · MEM {Math.round((p.monit?.memory ?? 0) / 1024 / 1024)}MB · PID {p.pid || '—'}</small>
+                  </div>
+                  {serviceUrl(p.name, useTailscale) ? (
+                    <div><small>URL: {serviceUrl(p.name, useTailscale)}</small></div>
+                  ) : null}
                 </div>
-                {serviceUrl(p.name, useTailscale) ? (
-                  <div><small>URL: {serviceUrl(p.name, useTailscale)}</small></div>
-                ) : null}
-              </div>
-              <div className="actions">
-                <button onClick={() => openService(p.name)}>Open</button>
-                <button onClick={() => action(p.name, 'start')}>Start</button>
-                <button className="secondary" onClick={() => action(p.name, 'restart')}>Restart</button>
-                <button className="warn" onClick={() => action(p.name, 'stop')}>Stop</button>
-                <button className="secondary" onClick={() => getLogs(p.name)}>Logs</button>
+                <div className="actions">
+                  <button onClick={() => openService(p.name)}>Open</button>
+                  <button onClick={() => action(p.name, 'start')}>Start</button>
+                  <button className="secondary" onClick={() => action(p.name, 'restart')}>Restart</button>
+                  <button className="warn" onClick={() => action(p.name, 'stop')}>Stop</button>
+                  <button className="secondary" onClick={() => getLogs(p.name)}>Logs</button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {logs ? (
