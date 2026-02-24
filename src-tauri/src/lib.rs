@@ -107,6 +107,22 @@ fn pm2_logs(name: String, lines: u32) -> Result<String, String> {
     ))
 }
 
+#[tauri::command]
+fn restart_mission_control() -> Result<(), String> {
+    let out = Command::new("sh")
+        .args([
+            "-lc",
+            "pkill -f 'mission-control/server.py' || true; nohup python3 ~/git/PS4/mission-control/server.py >/tmp/mission-control.log 2>&1 &",
+        ])
+        .output()
+        .map_err(|e| e.to_string())?;
+
+    if !out.status.success() {
+        return Err(String::from_utf8_lossy(&out.stderr).to_string());
+    }
+    Ok(())
+}
+
 fn show_main_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -146,6 +162,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let start_all = MenuItem::with_id(app, "start_all", "Start All", true, None::<&str>)?;
     let stop_all = MenuItem::with_id(app, "stop_all", "Stop All", true, None::<&str>)?;
     let save = MenuItem::with_id(app, "save", "Save PM2 State", true, None::<&str>)?;
+    let restart_mission = MenuItem::with_id(app, "restart_mission", "Restart Mission Control", true, None::<&str>)?;
 
     let svc0 = MenuItem::with_id(
         app,
@@ -182,6 +199,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
             &restart_all,
             &stop_all,
             &save,
+            &restart_mission,
             &sep,
             &svc0,
             &svc1,
@@ -248,6 +266,10 @@ pub fn run() {
                         let _ = pm2_save();
                         show_main_window(&handle);
                     }
+                    "restart_mission" => {
+                        let _ = restart_mission_control();
+                        show_main_window(&handle);
+                    }
                     "quit" => app.exit(0),
                     _ if id.starts_with("svc_restart:") => {
                         let name = id.trim_start_matches("svc_restart:").to_string();
@@ -266,7 +288,8 @@ pub fn run() {
             pm2_action,
             pm2_action_all,
             pm2_save,
-            pm2_logs
+            pm2_logs,
+            restart_mission_control
         ])
         .run(tauri::generate_context!())
         .expect("error while running pm2-control");

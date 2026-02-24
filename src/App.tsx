@@ -29,6 +29,10 @@ export default function App() {
     await refresh()
   }
 
+  async function restartMissionControl() {
+    await invoke('restart_mission_control')
+  }
+
   async function getLogs(name: string) {
     const txt = await invoke<string>('pm2_logs', { name, lines: 80 })
     setLogs(txt)
@@ -52,6 +56,7 @@ export default function App() {
           <button className="secondary" style={{ marginLeft: 8 }} onClick={() => actionAll('restart')}>Restart all</button>
           <button className="warn" style={{ marginLeft: 8 }} onClick={() => actionAll('stop')}>Stop all</button>
           <button className="secondary" style={{ marginLeft: 8 }} onClick={saveState}>Save</button>
+          <button className="secondary" style={{ marginLeft: 8 }} onClick={restartMissionControl}>Restart Mission</button>
           <button className="secondary" style={{ marginLeft: 8 }} onClick={refresh}>Refresh</button>
         </div>
       </div>

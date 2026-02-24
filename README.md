@@ -13,6 +13,7 @@ Lightweight macOS desktop dashboard for PM2.
 - Menu bar (tray) icon with quick actions + Open Dashboard
 - Tray title shows live running/total count (e.g. `3/5`)
 - One-click tray shortcuts to restart top services
+- Built-in "Restart Mission Control" action for `~/git/PS4/mission-control/server.py`
 
 ## Why
 
