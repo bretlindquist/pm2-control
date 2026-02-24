@@ -201,7 +201,7 @@ export default function App() {
       </div>
 
       <div className="main-layout">
-        <div className="grid" style={{ marginTop: 12 }}>
+        <div className="grid">
           {filtered.map((p) => {
             const status = p.pm2_env?.status ?? 'unknown'
             const mem = Math.round((p.monit?.memory ?? 0) / 1024 / 1024)

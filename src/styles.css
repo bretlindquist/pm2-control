@@ -50,7 +50,7 @@ h1 { margin: 0; }
   box-shadow: 0 0 0 3px rgba(143, 179, 255, 0.28);
 }
 
-.main-layout { display: grid; grid-template-columns: 1fr 360px; gap: 14px; align-items: start; }
+.main-layout { display: grid; grid-template-columns: 1fr 360px; gap: 14px; align-items: start; margin-top: 12px; }
 .grid { display:grid; grid-template-columns:1fr; gap:12px; }
 
 .card {
