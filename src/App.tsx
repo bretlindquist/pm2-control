@@ -86,8 +86,8 @@ export default function App() {
           <button className="warn" style={{ marginLeft: 8 }} onClick={() => actionAll('stop')}>Stop all</button>
           <button className="secondary" style={{ marginLeft: 8 }} onClick={saveState}>Save</button>
           <button className="secondary" style={{ marginLeft: 8 }} onClick={restartMissionControl}>Restart Mission</button>
-          <button className="secondary" style={{ marginLeft: 8 }} onClick={refresh}>
-            {isRefreshing ? <span className="spin">↻</span> : 'Refresh'}
+          <button className="secondary" style={{ marginLeft: 8, minWidth: 92 }} onClick={refresh}>
+            <span className={isRefreshing ? 'spin' : ''}>↻</span> <span style={{ marginLeft: 6 }}>Refresh</span>
           </button>
         </div>
       </div>

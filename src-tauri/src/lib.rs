@@ -128,6 +128,7 @@ fn open_service(name: String) -> Result<(), String> {
     let url = match name.as_str() {
         "golfgit-dev" => "http://127.0.0.1:3000",
         "codex-switcher-web" => "http://127.0.0.1:5176",
+        "codex-switcher-api" => "http://127.0.0.1:8788/api/health",
         "ps4-mission-control" => "http://127.0.0.1:8787/mission-control/",
         _ => return Err(format!("No open URL configured for {name}")),
     };
