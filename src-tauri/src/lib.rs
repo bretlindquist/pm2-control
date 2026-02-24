@@ -188,7 +188,7 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let restart_all = MenuItem::with_id(app, "restart_all", "Restart All", true, None::<&str>)?;
     let start_all = MenuItem::with_id(app, "start_all", "Start All", true, None::<&str>)?;
     let stop_all = MenuItem::with_id(app, "stop_all", "Stop All", true, None::<&str>)?;
-    let save = MenuItem::with_id(app, "save", "Save PM2 State", true, None::<&str>)?;
+    let save = MenuItem::with_id(app, "save", "Save Harbor State", true, None::<&str>)?;
     let restart_mission = MenuItem::with_id(app, "restart_mission", "Restart Mission Control", true, None::<&str>)?;
 
     let svc0 = MenuItem::with_id(
@@ -326,5 +326,5 @@ pub fn run() {
             open_service
         ])
         .run(tauri::generate_context!())
-        .expect("error while running pm2-control");
+        .expect("error while running command-harbor");
 }
