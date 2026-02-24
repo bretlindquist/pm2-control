@@ -3,6 +3,14 @@ import { invoke } from '@tauri-apps/api/core'
 
 type Proc = { name: string; pm_id: number; pid: number; monit?: { memory?: number; cpu?: number }; pm2_env?: { status?: string; restart_time?: number; pm_uptime?: number } }
 
+function serviceUrl(name: string): string | null {
+  if (name === 'golfgit-dev') return 'http://127.0.0.1:3000'
+  if (name === 'codex-switcher-web') return 'http://127.0.0.1:5176'
+  if (name === 'codex-switcher-api') return 'http://127.0.0.1:8788/api/health'
+  if (name === 'ps4-mission-control') return 'http://127.0.0.1:8787/mission-control/'
+  return null
+}
+
 export default function App() {
   const [list, setList] = useState<Proc[]>([])
   const [logs, setLogs] = useState('')
@@ -99,7 +107,12 @@ export default function App() {
             <div className="row">
               <div>
                 <strong>{p.name}</strong> <small>#{p.pm_id}</small>
-                <div><small>Status: {p.pm2_env?.status ?? 'unknown'} · CPU {Math.round(p.monit?.cpu ?? 0)}% · MEM {Math.round((p.monit?.memory ?? 0)/1024/1024)}MB</small></div>
+                <div>
+                  <small>Status: {p.pm2_env?.status ?? 'unknown'} · CPU {Math.round(p.monit?.cpu ?? 0)}% · MEM {Math.round((p.monit?.memory ?? 0)/1024/1024)}MB</small>
+                </div>
+                {serviceUrl(p.name) ? (
+                  <div><small>URL: {serviceUrl(p.name)}</small></div>
+                ) : null}
               </div>
               <div className="actions">
                 <button onClick={() => openService(p.name)}>Open</button>
