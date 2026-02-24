@@ -27,6 +27,8 @@ export default function App() {
   const [useTailscale, setUseTailscale] = useState(false)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterMode>('all')
+  const [compactMode, setCompactMode] = useState(false)
+  const [logService, setLogService] = useState<string | null>(null)
 
   async function refresh() {
     const started = Date.now()
@@ -67,8 +69,9 @@ export default function App() {
   }
 
   async function getLogs(name: string) {
-    const txt = await invoke<string>('pm2_logs', { name, lines: 80 })
+    const txt = await invoke<string>('pm2_logs', { name, lines: 120 })
     setLogs(txt)
+    setLogService(name)
   }
 
   useEffect(() => {
@@ -102,9 +105,12 @@ export default function App() {
   }, [list, query, filter])
 
   return (
-    <div className="container">
+    <div className={`container ${compactMode ? 'compact' : ''}`}>
       <div className="header">
-        <h1>PM2 Control</h1>
+        <div>
+          <h1>PM2 Control</h1>
+          <small className="subtitle">Command Center</small>
+        </div>
         <div className="top-actions">
           <span className="badge">Running {running}/{list.length}</span>
           <button className="secondary" onClick={() => actionAll('start')}>Start all</button>
@@ -131,6 +137,9 @@ export default function App() {
           <button className={filter === 'all' ? '' : 'secondary'} onClick={() => setFilter('all')}>All</button>
           <button className={filter === 'online' ? '' : 'secondary'} onClick={() => setFilter('online')}>Online</button>
           <button className={filter === 'non-online' ? '' : 'secondary'} onClick={() => setFilter('non-online')}>Issues</button>
+          <button className={compactMode ? '' : 'secondary'} onClick={() => setCompactMode(v => !v)}>
+            {compactMode ? 'Comfort' : 'Compact'}
+          </button>
         </div>
 
         <label className="toggle" role="switch" aria-checked={useTailscale}>
@@ -147,43 +156,46 @@ export default function App() {
         </label>
       </div>
 
-      <div className="grid" style={{ marginTop: 12 }}>
-        {filtered.map((p) => {
-          const status = p.pm2_env?.status ?? 'unknown'
-          return (
-            <div key={p.pm_id} className="card">
-              <div className="row">
-                <div>
-                  <div className="title-row">
-                    <strong>{p.name}</strong>
-                    <span className={statusClass(status)}>{status}</span>
-                  </div>
+      <div className="main-layout">
+        <div className="grid" style={{ marginTop: 12 }}>
+          {filtered.map((p) => {
+            const status = p.pm2_env?.status ?? 'unknown'
+            return (
+              <div key={p.pm_id} className="card">
+                <div className="row">
                   <div>
-                    <small>CPU {Math.round(p.monit?.cpu ?? 0)}% · MEM {Math.round((p.monit?.memory ?? 0) / 1024 / 1024)}MB · PID {p.pid || '—'}</small>
+                    <div className="title-row">
+                      <strong>{p.name}</strong>
+                      <span className={statusClass(status)}>{status}</span>
+                    </div>
+                    <div>
+                      <small>CPU {Math.round(p.monit?.cpu ?? 0)}% · MEM {Math.round((p.monit?.memory ?? 0) / 1024 / 1024)}MB · PID {p.pid || '—'}</small>
+                    </div>
+                    {serviceUrl(p.name, useTailscale) ? (
+                      <div><small>URL: {serviceUrl(p.name, useTailscale)}</small></div>
+                    ) : null}
                   </div>
-                  {serviceUrl(p.name, useTailscale) ? (
-                    <div><small>URL: {serviceUrl(p.name, useTailscale)}</small></div>
-                  ) : null}
-                </div>
-                <div className="actions">
-                  <button onClick={() => openService(p.name)}>Open</button>
-                  <button onClick={() => action(p.name, 'start')}>Start</button>
-                  <button className="secondary" onClick={() => action(p.name, 'restart')}>Restart</button>
-                  <button className="warn" onClick={() => action(p.name, 'stop')}>Stop</button>
-                  <button className="secondary" onClick={() => getLogs(p.name)}>Logs</button>
+                  <div className="actions">
+                    <button onClick={() => openService(p.name)}>Open</button>
+                    <button onClick={() => action(p.name, 'start')}>Start</button>
+                    <button className="secondary" onClick={() => action(p.name, 'restart')}>Restart</button>
+                    <button className="warn" onClick={() => action(p.name, 'stop')}>Stop</button>
+                    <button className="secondary" onClick={() => getLogs(p.name)}>Logs</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {logs ? (
-        <div style={{ marginTop: 14 }}>
-          <h3>Recent logs</h3>
-          <pre>{logs}</pre>
+            )
+          })}
         </div>
-      ) : null}
+
+        <aside className="logs-panel">
+          <div className="logs-head">
+            <h3>Live Logs</h3>
+            {logService ? <small>{logService}</small> : <small>No service selected</small>}
+          </div>
+          {logs ? <pre>{logs}</pre> : <div className="empty">Pick a service and click Logs</div>}
+        </aside>
+      </div>
 
       <div style={{ marginTop: 16, opacity: 0.75 }}>
         <small>Version v{__APP_VERSION__} · Commit {__APP_COMMIT__}</small>
