@@ -145,7 +145,7 @@ export default function App() {
     <div className={`container ${compactMode ? 'compact' : ''}`}>
       <div className="header">
         <div>
-          <h1>PM2 Control</h1>
+          <h1>Command Harbor</h1>
           <small className="subtitle">Command Center</small>
         </div>
         <div className="top-actions">

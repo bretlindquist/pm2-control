@@ -1,6 +1,6 @@
-# PM2 Control
+# Command Harbor
 
-Lightweight macOS desktop dashboard for PM2.
+Nautical-themed macOS command center dashboard for PM2.
 
 ## MVP (Phase 2)
 
