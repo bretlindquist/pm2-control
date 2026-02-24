@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 
 type Proc = { name: string; pm_id: number; pid: number; monit?: { memory?: number; cpu?: number }; pm2_env?: { status?: string; restart_time?: number; pm_uptime?: number } }
 type FilterMode = 'all' | 'online' | 'non-online'
+type MetricHistory = Record<string, { cpu: number[]; mem: number[] }>
 
 function serviceUrl(name: string, tailscale: boolean): string | null {
   const base = 'https://brets-macbook-pro-m2-max.tailb491d6.ts.net'
@@ -19,8 +20,30 @@ function statusClass(status?: string) {
   return 'pill err'
 }
 
+function Sparkline({ values, color = '#8fb3ff' }: { values: number[]; color?: string }) {
+  const width = 90
+  const height = 24
+  if (values.length < 2) return <svg width={width} height={height} className="sparkline" />
+
+  const max = Math.max(...values, 1)
+  const points = values
+    .map((v, i) => {
+      const x = (i / (values.length - 1)) * (width - 2) + 1
+      const y = height - (v / max) * (height - 4) - 2
+      return `${x},${y}`
+    })
+    .join(' ')
+
+  return (
+    <svg width={width} height={height} className="sparkline" role="img" aria-label="trend sparkline">
+      <polyline fill="none" stroke={color} strokeWidth="2" points={points} />
+    </svg>
+  )
+}
+
 export default function App() {
   const [list, setList] = useState<Proc[]>([])
+  const [history, setHistory] = useState<MetricHistory>({})
   const [logs, setLogs] = useState('')
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -36,6 +59,19 @@ export default function App() {
     try {
       const data = await invoke<Proc[]>('pm2_list')
       setList(data)
+      setHistory((prev) => {
+        const next: MetricHistory = { ...prev }
+        for (const p of data) {
+          const cpu = Math.round(p.monit?.cpu ?? 0)
+          const mem = Math.round((p.monit?.memory ?? 0) / 1024 / 1024)
+          const cur = next[p.name] ?? { cpu: [], mem: [] }
+          next[p.name] = {
+            cpu: [...cur.cpu, cpu].slice(-20),
+            mem: [...cur.mem, mem].slice(-20),
+          }
+        }
+        return next
+      })
       setUpdatedAt(new Date())
     } finally {
       const elapsed = Date.now() - started
@@ -92,6 +128,7 @@ export default function App() {
   }, [])
 
   const running = list.filter((p) => p.pm2_env?.status === 'online').length
+  const issues = list.filter((p) => p.pm2_env?.status !== 'online')
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -123,6 +160,13 @@ export default function App() {
           </button>
         </div>
       </div>
+
+      {issues.length > 0 ? (
+        <div className="alert-rail">
+          <strong>{issues.length} service{issues.length > 1 ? 's' : ''} need attention:</strong>{' '}
+          {issues.map((i) => i.name).join(', ')}
+        </div>
+      ) : null}
 
       <div className="subbar">
         <small>Last updated: {updatedAt?.toLocaleTimeString() ?? '—'}</small>
@@ -160,6 +204,11 @@ export default function App() {
         <div className="grid" style={{ marginTop: 12 }}>
           {filtered.map((p) => {
             const status = p.pm2_env?.status ?? 'unknown'
+            const mem = Math.round((p.monit?.memory ?? 0) / 1024 / 1024)
+            const cpu = Math.round(p.monit?.cpu ?? 0)
+            const restarts = p.pm2_env?.restart_time ?? 0
+            const metrics = history[p.name] ?? { cpu: [], mem: [] }
+
             return (
               <div key={p.pm_id} className="card">
                 <div className="row">
@@ -167,9 +216,16 @@ export default function App() {
                     <div className="title-row">
                       <strong>{p.name}</strong>
                       <span className={statusClass(status)}>{status}</span>
+                      <span className="restart-chip">restarts {restarts}</span>
                     </div>
                     <div>
-                      <small>CPU {Math.round(p.monit?.cpu ?? 0)}% · MEM {Math.round((p.monit?.memory ?? 0) / 1024 / 1024)}MB · PID {p.pid || '—'}</small>
+                      <small>CPU {cpu}% · MEM {mem}MB · PID {p.pid || '—'}</small>
+                    </div>
+                    <div className="spark-row">
+                      <small>CPU</small>
+                      <Sparkline values={metrics.cpu} color="#8fb3ff" />
+                      <small>MEM</small>
+                      <Sparkline values={metrics.mem} color="#87f0cb" />
                     </div>
                     {serviceUrl(p.name, useTailscale) ? (
                       <div><small>URL: {serviceUrl(p.name, useTailscale)}</small></div>
